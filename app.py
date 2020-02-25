@@ -33,7 +33,7 @@ class TkHouFpsHandler(Application):
     # implementation
 
     def hou_callback(self, event_type):
-        if event_type == hou.hipFileEventType.AfterLoad or event_type == hou.hipFileEventType.AfterSave:
+        if event_type == hou.hipFileEventType.AfterLoad:
             self.fps_scene_opened()
 
     def fps_scene_opened(self):
