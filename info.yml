@@ -12,7 +12,19 @@
 
 # expected fields in the configuration file for this app
 configuration:
+    default_fps:
+        type: float
+        allows_empty: True
+        default_value: 25.0
+        description: >
+            Default fps used by the app
 
+    shotgun_fps_field:
+        type: str
+        allows_empty: True
+        default_value: sg_projectfps
+        description: >
+            Fps field created in shotgun for every project
 # the Shotgun fields that this app needs in order to operate correctly
 requires_shotgun_fields:
 

@@ -10,10 +10,15 @@ class TkHouFpsHandler(Application):
         :params app: The application instance. 
         
         """
+        
+        # get configuration
+        self._default_fps = self.get_setting('default_fps')
+        self._shotgun_fps_field = self.get_setting('shotgun_fps_field')
+        
+        # run the method when the app is started
+        self.fps_scene_opened()
 
-        # keep a reference to the app for easy access to templates, settings,
-        # logging methods, tank, context, etc.
-        self.fps_scene_opened() # run the method when the app is started
+        # add callback
         hou.hipFile.addEventCallback(self.hou_callback)
         self.log_info("Creating file callback for the TkHouFpsHandler!")
 
@@ -32,18 +37,15 @@ class TkHouFpsHandler(Application):
             self.fps_scene_opened()
 
     def fps_scene_opened(self):
-        # compare maya scene fps and shotgun project fps. If the maya scene is new/empty set it's framerate to the shotgun project fps without
-        # asking the user. If scene is not new (has already objects) warn the user and give him the choice
-        # to either leave the maya scene fps unchanged or to change it to the shotgun project fps.
-
+        # get shotgun project fps
         project = self.context.project
         sg_filters = [['id', 'is', project['id']]]
-        project_fps = self.sgtk.shotgun.find_one('Project', filters=sg_filters, fields=["sg_projectfps"])['sg_projectfps']
+        project_fps = self.sgtk.shotgun.find_one('Project', filters=sg_filters, fields=[self._shotgun_fps_field])[self._shotgun_fps_field]
         
-        # force to 25 if not defined in Shotgun
+        # force to self._default_fps if not defined in Shotgun
         if not project_fps:
-            project_fps = 25.0
-            self.log_warning("Shotgun project fps is not defined, assuming it should be 25.0")
+            project_fps = self._default_fps
+            self.log_warning("Shotgun project fps is not defined, assuming it should be {}".format(self._default_fps))
         
         if project_fps != hou.fps():
             # check if scene is not empty
