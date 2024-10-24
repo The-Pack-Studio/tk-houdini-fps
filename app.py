@@ -49,11 +49,16 @@ class TkHouFpsHandler(Application):
         
         if project_fps != hou.fps():
             # check if scene is not empty
-            if len(hou.node('/obj').children()) != 0:
+            if (len(hou.node('/obj').children()) + len(hou.node('/stage/').children())) != 0:
                 self.log_info("Detected that Houdini fps does not match the Shotgun project fps!")
                 
-                # Prompt the user if they want to change the fps, return if negative
-                if hou.ui.displayMessage("The current hip file fps ({}) does not match the Shotgun project fps ({})!\nChange FPS?".format(hou.fps(), project_fps), buttons=("Yes", "No")) != 0:
-                    return
-                    
+                if hou.isUIAvailable():
+                    # Prompt the user if they want to change the fps, return if negative
+                    if hou.ui.displayMessage("The current hip file fps ({}) does not match the Shotgun project fps ({})!\nChange FPS?".format(hou.fps(), project_fps), buttons=("Yes", "No")) != 0:
+                        return
+                else:
+                    # No UI - rendering in deadline but with a difference between Houdini FPS and ShotGrid FPS ; let's crash the render
+                    self.log_error("Error: The frame rate in ShotGrid is: {}fps, the one in the Houdini scene is: {}fps. I'm resigning".format(project_fps, hou.fps()))
+
+
             hou.setFps(project_fps)
